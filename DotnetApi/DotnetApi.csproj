@@ -24,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Endpoint\Api\" />
+      <Folder Include="Helper\" />
     </ItemGroup>
 
 </Project>

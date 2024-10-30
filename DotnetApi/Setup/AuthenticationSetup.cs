@@ -10,6 +10,7 @@ public static class AuthenticationSetup
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
             {
+                options.IncludeErrorDetails = true;
                 options.Authority = $"https://{builder.Configuration["Auth0:Domain"]}";
                 options.TokenValidationParameters = new TokenValidationParameters
                 {

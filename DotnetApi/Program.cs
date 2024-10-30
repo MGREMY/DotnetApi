@@ -1,7 +1,9 @@
 using DotnetApi;
 using DotnetApi.Endpoint;
 using DotnetApi.Setup;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateSlimBuilder(args);
@@ -13,7 +15,32 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Api token",
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        BearerFormat = "JWT",
+        Scheme = "Bearer",
+    });
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer",
+                }
+            },
+            []
+        }
+    });
+});
 
 builder.AddAuthentication()
     .AddAuthorization();
@@ -25,10 +52,24 @@ app.MapApiEndpoints();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger(options => { options.RouteTemplate = "openapi/{documentName}.json"; });
-    app.MapScalarApiReference();
+    app.MapScalarApiReference(options =>
+    {
+        options
+            .WithPreferredScheme("Bearer");
+    });
 }
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+if (bool.TryParse(app.Configuration["Api:AutoUpdateDb"], out var autoUpdateDb))
+{
+    if (autoUpdateDb)
+    {
+        await using var scope = app.Services.CreateAsyncScope();
+        await using var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await context.Database.MigrateAsync();
+    }
+}
 
 app.Run();
