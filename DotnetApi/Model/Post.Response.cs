@@ -2,12 +2,14 @@
 
 public sealed record PostResponse
 {
-    public required Guid Id { get; set; }
-    public required string Title { get; set; }
-    public required string Content { get; set; }
-    public required string CreatedUserEmail { get; set; }
-    public required DateTime CreatedAtUtc { get; set; }
-    public required bool HasBeenModified { get; set; }
+#nullable disable
+    public Guid Id { get; set; }
+    public string Title { get; set; }
+    public string Content { get; set; }
+    public string CreatedUserEmail { get; set; }
+    public DateTime CreatedAtUtc { get; set; }
+    public bool HasBeenModified { get; set; }
+#nullable restore
 
     public static explicit operator PostResponse(Post post)
     {

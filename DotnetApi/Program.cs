@@ -1,10 +1,12 @@
 using DotnetApi;
 using DotnetApi.Endpoint;
 using DotnetApi.Setup;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
+using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
@@ -43,7 +45,8 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.AddAuthentication()
-    .AddAuthorization();
+    .AddAuthorization()
+    .AddValidation();
 
 var app = builder.Build();
 

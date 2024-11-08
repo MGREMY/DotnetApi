@@ -94,7 +94,7 @@ public static class PostApi
             .ExecuteUpdateAsync(x =>
                     x.SetProperty(p => p.Title, request.Title)
                         .SetProperty(p => p.Content, request.Content)
-                        .SetProperty(p => p.HasBeenModified, request.HasBeenModified),
+                        .SetProperty(p => p.HasBeenModified, true),
                 cancellationToken);
 
         return result > 0

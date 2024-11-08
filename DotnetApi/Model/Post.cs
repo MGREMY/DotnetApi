@@ -5,19 +5,21 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace DotnetApi.Model;
 
 [EntityTypeConfiguration(typeof(PostEntityConfiguration))]
-public partial class Post : ISoftDeletable, ICreatedAt
+public partial class Post : ISoftDeletable, ICreatedAt, IModifiable
 {
-    public required Guid Id { get; set; }
-    public required string Title { get; set; }
-    public required string Content { get; set; }
-    public required string CreatedUserEmail { get; set; }
-    public required bool HasBeenModified { get; set; }
+#nullable disable
+    public Guid Id { get; set; }
+    public string Title { get; set; }
+    public string Content { get; set; }
+    public string CreatedUserEmail { get; set; }
+    public bool HasBeenModified { get; set; }
 
     public bool IsDeleted { get; set; }
     public DateTime? DeletedAtUtc { get; set; }
     public DateTime CreatedAtUtc { get; set; }
 
-    public IEnumerable<Comment> Comments { get; set; } = [];
+    public IEnumerable<Comment> Comments { get; set; }
+#nullable restore
 }
 
 internal sealed class PostEntityConfiguration : IEntityTypeConfiguration<Post>
@@ -25,7 +27,8 @@ internal sealed class PostEntityConfiguration : IEntityTypeConfiguration<Post>
     public void Configure(EntityTypeBuilder<Post> builder)
     {
         builder.AddSoftDeletion()
-            .AddCreatedAt();
+            .AddCreatedAt()
+            .AddModifiable();
 
         builder.HasKey(x => x.Id);
 
@@ -37,9 +40,6 @@ internal sealed class PostEntityConfiguration : IEntityTypeConfiguration<Post>
             .IsRequired();
         builder.Property(p => p.CreatedUserEmail)
             .HasMaxLength(512)
-            .IsRequired();
-        builder.Property(p => p.HasBeenModified)
-            .HasDefaultValue(false)
             .IsRequired();
     }
 }

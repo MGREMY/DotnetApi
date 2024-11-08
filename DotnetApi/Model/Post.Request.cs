@@ -1,11 +1,14 @@
-﻿namespace DotnetApi.Model;
+﻿using FluentValidation;
+
+namespace DotnetApi.Model;
 
 public sealed record PostRequest
 {
+#nullable disable
     public required string Title { get; set; }
     public required string Content { get; set; }
     public required string CreatedUserEmail { get; set; }
-    public required bool HasBeenModified { get; set; }
+#nullable restore
 
     public static explicit operator Post(PostRequest request)
     {
@@ -15,7 +18,19 @@ public sealed record PostRequest
             Title = request.Title,
             Content = request.Content,
             CreatedUserEmail = request.CreatedUserEmail,
-            HasBeenModified = request.HasBeenModified,
         };
+    }
+
+    public class Validator : AbstractValidator<PostRequest>
+    {
+        public Validator()
+        {
+            RuleFor(x => x.Title)
+                .NotEmpty();
+            RuleFor(x => x.Content)
+                .NotEmpty();
+            RuleFor(x => x.CreatedUserEmail)
+                .NotEmpty();
+        }
     }
 }

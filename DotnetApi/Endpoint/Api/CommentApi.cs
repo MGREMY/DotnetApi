@@ -74,12 +74,9 @@ public static class CommentApi
             : TypedResults.Ok(comment);
     }
 
-    private static async Task<Results<Created<CommentResponse>, NotFound, BadRequest>> Post(
+    private static async Task<Results<Created<CommentResponse>, BadRequest>> Post(
         [FromBody] CommentRequest request, AppDbContext context, CancellationToken cancellationToken)
     {
-        if (!await context.Posts.AnyAsync(x => x.Id == request.PostId, cancellationToken))
-            return TypedResults.NotFound();
-
         var comment = ((Comment)request).SetCreatedAtData();
 
         await context.Comments.AddAsync(comment, cancellationToken);

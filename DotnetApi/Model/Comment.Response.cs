@@ -2,13 +2,15 @@
 
 public sealed record CommentResponse
 {
-    public required Guid Id { get; set; }
-    public required Guid PostId { get; set; }
-    public required string Content { get; set; }
-    public required string CreatedUserEmail { get; set; }
-    public required DateTime CreatedAtUtc { get; set; }
-    public required bool HasBeenModified { get; set; }
-
+#nullable disable
+    public Guid Id { get; set; }
+    public Guid PostId { get; set; }
+    public string Content { get; set; }
+    public string CreatedUserEmail { get; set; }
+    public DateTime CreatedAtUtc { get; set; }
+    public bool HasBeenModified { get; set; }
+#nullable restore
+    
     public static explicit operator CommentResponse(Comment comment)
     {
         return new CommentResponse

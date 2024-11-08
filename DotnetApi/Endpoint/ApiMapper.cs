@@ -1,5 +1,6 @@
 ﻿using DotnetApi.Endpoint.Api;
 using Microsoft.AspNetCore.Authorization;
+using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
 
 namespace DotnetApi.Endpoint;
 
@@ -9,7 +10,8 @@ public static class ApiMapper
     {
         app.MapGroup("/api")
             .MapPostApiEndpoints()
-            .MapCommentApiEndpoints();
+            .MapCommentApiEndpoints()
+            .AddFluentValidationAutoValidation();
 
         return app;
     }
