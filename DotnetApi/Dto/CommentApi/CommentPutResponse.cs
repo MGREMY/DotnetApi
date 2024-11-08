@@ -5,7 +5,7 @@ namespace DotnetApi.Dto.CommentApi;
 public sealed record CommentPutResponse
 {
 #nullable disable
-    public Guid Id { get; set; }
+    public Guid CommentId { get; set; }
     public Guid PostId { get; set; }
     public string Content { get; set; }
     public string CreatedUserEmail { get; set; }
@@ -17,7 +17,7 @@ public sealed record CommentPutResponse
     {
         return new CommentPutResponse
         {
-            Id = comment.Id,
+            CommentId = comment.Id,
             PostId = comment.PostId,
             Content = comment.Content,
             CreatedUserEmail = comment.CreatedUserEmail,

@@ -5,7 +5,7 @@ namespace DotnetApi.Dto.PostApi;
 public sealed record PostPostResponse
 {
 #nullable disable
-    public Guid Id { get; set; }
+    public Guid PostId { get; set; }
     public string Title { get; set; }
     public string Content { get; set; }
     public string CreatedUserEmail { get; set; }
@@ -17,7 +17,7 @@ public sealed record PostPostResponse
     {
         return new PostPostResponse
         {
-            Id = post.Id,
+            PostId = post.Id,
             Title = post.Title,
             Content = post.Content,
             CreatedUserEmail = post.CreatedUserEmail,

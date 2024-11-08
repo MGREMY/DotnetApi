@@ -6,9 +6,9 @@ namespace DotnetApi.Dto.PostApi;
 public sealed record PostPostRequest
 {
 #nullable disable
-    public required string Title { get; set; }
-    public required string Content { get; set; }
-    public required string CreatedUserEmail { get; set; }
+    public string Title { get; set; }
+    public string Content { get; set; }
+    public string CreatedUserEmail { get; set; }
 #nullable restore
 
     public static explicit operator Post(PostPostRequest request)

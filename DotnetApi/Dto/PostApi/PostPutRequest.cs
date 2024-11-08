@@ -6,16 +6,17 @@ namespace DotnetApi.Dto.PostApi;
 public sealed record PostPutRequest
 {
 #nullable disable
-    public required string Title { get; set; }
-    public required string Content { get; set; }
-    public required string CreatedUserEmail { get; set; }
+    public Guid PostId { get; set; }
+    public string Title { get; set; }
+    public string Content { get; set; }
+    public string CreatedUserEmail { get; set; }
 #nullable restore
 
     public static explicit operator Post(PostPutRequest request)
     {
         return new Post
         {
-            Id = Guid.Empty,
+            Id = request.PostId,
             Title = request.Title,
             Content = request.Content,
             CreatedUserEmail = request.CreatedUserEmail,

@@ -3,9 +3,9 @@ using DotnetApi.Model;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
-namespace DotnetApi.Dto.CommentApi;
+namespace DotnetApi.Dto.PostApi;
 
-public sealed record CommentPostRequest
+public sealed record PostPostCommentRequest
 {
 #nullable disable
     public Guid PostId { get; set; }
@@ -13,7 +13,7 @@ public sealed record CommentPostRequest
     public string CreatedUserEmail { get; set; }
 #nullable restore
 
-    public static explicit operator Comment(CommentPostRequest request)
+    public static explicit operator Comment(PostPostCommentRequest request)
     {
         return new Comment
         {
@@ -24,7 +24,7 @@ public sealed record CommentPostRequest
         };
     }
 
-    public class Validator : AbstractValidator<CommentPostRequest>
+    public class Validator : AbstractValidator<PostPostCommentRequest>
     {
         public Validator(AppDbContext context)
         {
@@ -32,7 +32,7 @@ public sealed record CommentPostRequest
                 .NotEmpty()
                 .MustAsync(async (postId, cancellationToken) =>
                     await context.Posts.AnyAsync(x => x.Id == postId, cancellationToken))
-                .WithMessage(ValidationMessage.RoleNotFound);
+                .WithMessage(ValidationMessage.PostNotFound);
             RuleFor(x => x.Content)
                 .NotEmpty();
             RuleFor(x => x.CreatedUserEmail)

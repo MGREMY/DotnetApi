@@ -32,7 +32,7 @@ public sealed record CommentPutRequest
                 .NotEmpty()
                 .MustAsync(async (postId, cancellationToken) =>
                     await context.Posts.AnyAsync(x => x.Id == postId, cancellationToken))
-                .WithMessage(ValidationMessage.RoleNotFound);
+                .WithMessage(ValidationMessage.PostNotFound);
             RuleFor(x => x.Content)
                 .NotEmpty();
             RuleFor(x => x.CreatedUserEmail)

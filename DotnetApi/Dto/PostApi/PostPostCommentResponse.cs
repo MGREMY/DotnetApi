@@ -1,11 +1,11 @@
 ﻿using DotnetApi.Model;
 
-namespace DotnetApi.Dto.CommentApi;
+namespace DotnetApi.Dto.PostApi;
 
-public sealed record CommentPostResponse
+public sealed record PostPostCommentResponse
 {
 #nullable disable
-    public Guid Id { get; set; }
+    public Guid CommentId { get; set; }
     public Guid PostId { get; set; }
     public string Content { get; set; }
     public string CreatedUserEmail { get; set; }
@@ -13,11 +13,11 @@ public sealed record CommentPostResponse
     public bool HasBeenModified { get; set; }
 #nullable restore
 
-    public static explicit operator CommentPostResponse(Comment comment)
+    public static explicit operator PostPostCommentResponse(Comment comment)
     {
-        return new CommentPostResponse
+        return new PostPostCommentResponse
         {
-            Id = comment.Id,
+            CommentId = comment.Id,
             PostId = comment.PostId,
             Content = comment.Content,
             CreatedUserEmail = comment.CreatedUserEmail,

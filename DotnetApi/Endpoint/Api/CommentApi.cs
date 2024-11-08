@@ -18,7 +18,6 @@ public static class CommentApi
 
         group.MapGet("", GetAll).RequireAuthorization("comment:r");
         group.MapGet("/{commentId:guid}", Get).RequireAuthorization("comment:r");
-        group.MapPost("", Post).RequireAuthorization("comment:rw");
         group.MapPut("/{commentId:guid}", Put).RequireAuthorization("comment:rw");
         group.MapDelete("/{commentId:guid}", Delete).RequireAuthorization("comment:d");
 
@@ -47,7 +46,7 @@ public static class CommentApi
         var comments = await context.Comments
             .Select<Comment, CommentGetAllResponse>(x => new CommentGetAllResponse
             {
-                Id = x.Id,
+                CommentId = x.Id,
                 PostId = x.PostId,
                 Content = x.Content,
                 CreatedUserEmail = x.CreatedUserEmail,
@@ -63,29 +62,17 @@ public static class CommentApi
     {
         var comment = await context.Comments.Select(x => new CommentGetResponse
         {
-            Id = x.Id,
+            CommentId = x.Id,
             PostId = x.PostId,
             Content = x.Content,
             CreatedUserEmail = x.CreatedUserEmail,
             CreatedAtUtc = x.CreatedAtUtc,
             HasBeenModified = x.HasBeenModified,
-        }).FirstOrDefaultAsync(x => x.Id == commentId, cancellationToken);
+        }).FirstOrDefaultAsync(x => x.CommentId == commentId, cancellationToken);
 
         return comment is null
             ? TypedResults.NotFound()
             : TypedResults.Ok(comment);
-    }
-
-    private static async Task<Results<Created<CommentPostResponse>, BadRequest>> Post(
-        [FromBody] CommentPostRequest request, AppDbContext context, CancellationToken cancellationToken)
-    {
-        var comment = ((Comment)request).SetCreatedAtData();
-
-        await context.Comments.AddAsync(comment, cancellationToken);
-
-        return await context.SaveChangesAsync(cancellationToken) > 0
-            ? TypedResults.Created($"/{comment.Id}", (CommentPostResponse)comment)
-            : TypedResults.BadRequest();
     }
 
     private static async Task<Results<Ok<CommentPutResponse>, NotFound>> Put([FromBody] CommentPutRequest request,
@@ -100,13 +87,13 @@ public static class CommentApi
         return result > 0
             ? TypedResults.Ok(await context.Comments.Select<Comment, CommentPutResponse>(x => new CommentPutResponse
             {
-                Id = x.Id,
+                CommentId = x.Id,
                 PostId = x.PostId,
                 Content = x.Content,
                 CreatedUserEmail = x.CreatedUserEmail,
                 CreatedAtUtc = x.CreatedAtUtc,
                 HasBeenModified = x.HasBeenModified,
-            }).FirstOrDefaultAsync(x => x.Id == commentId, cancellationToken))
+            }).FirstOrDefaultAsync(x => x.CommentId == commentId, cancellationToken))
             : TypedResults.NotFound();
     }
 
