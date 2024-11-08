@@ -1,4 +1,5 @@
-﻿using DotnetApi.Model;
+﻿using DotnetApi.Dto.CommentApi;
+using DotnetApi.Model;
 using DotnetApi.Model.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -40,10 +41,11 @@ public static class CommentApi
         return builder;
     }
 
-    private static async Task<Ok<CommentResponse[]>> GetAll(AppDbContext context, CancellationToken cancellationToken)
+    private static async Task<Ok<CommentGetAllResponse[]>> GetAll(AppDbContext context,
+        CancellationToken cancellationToken)
     {
         var comments = await context.Comments
-            .Select<Comment, CommentResponse>(x => new CommentResponse
+            .Select<Comment, CommentGetAllResponse>(x => new CommentGetAllResponse
             {
                 Id = x.Id,
                 PostId = x.PostId,
@@ -56,10 +58,10 @@ public static class CommentApi
         return TypedResults.Ok(comments);
     }
 
-    private static async Task<Results<Ok<CommentResponse>, NotFound>> Get([FromRoute] Guid commentId,
+    private static async Task<Results<Ok<CommentGetResponse>, NotFound>> Get([FromRoute] Guid commentId,
         AppDbContext context, CancellationToken cancellationToken)
     {
-        var comment = await context.Comments.Select(x => new CommentResponse
+        var comment = await context.Comments.Select(x => new CommentGetResponse
         {
             Id = x.Id,
             PostId = x.PostId,
@@ -74,19 +76,19 @@ public static class CommentApi
             : TypedResults.Ok(comment);
     }
 
-    private static async Task<Results<Created<CommentResponse>, BadRequest>> Post(
-        [FromBody] CommentRequest request, AppDbContext context, CancellationToken cancellationToken)
+    private static async Task<Results<Created<CommentPostResponse>, BadRequest>> Post(
+        [FromBody] CommentPostRequest request, AppDbContext context, CancellationToken cancellationToken)
     {
         var comment = ((Comment)request).SetCreatedAtData();
 
         await context.Comments.AddAsync(comment, cancellationToken);
 
         return await context.SaveChangesAsync(cancellationToken) > 0
-            ? TypedResults.Created($"/{comment.Id}", (CommentResponse)comment)
+            ? TypedResults.Created($"/{comment.Id}", (CommentPostResponse)comment)
             : TypedResults.BadRequest();
     }
 
-    private static async Task<Results<Ok<CommentResponse>, NotFound>> Put([FromBody] CommentRequest request,
+    private static async Task<Results<Ok<CommentPutResponse>, NotFound>> Put([FromBody] CommentPutRequest request,
         [FromRoute] Guid commentId, AppDbContext context, CancellationToken cancellationToken)
     {
         var result = await context.Comments.Where(x => x.Id == commentId)
@@ -96,7 +98,7 @@ public static class CommentApi
                 cancellationToken);
 
         return result > 0
-            ? TypedResults.Ok(await context.Comments.Select<Comment, CommentResponse>(x => new CommentResponse
+            ? TypedResults.Ok(await context.Comments.Select<Comment, CommentPutResponse>(x => new CommentPutResponse
             {
                 Id = x.Id,
                 PostId = x.PostId,

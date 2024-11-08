@@ -1,6 +1,8 @@
-﻿namespace DotnetApi.Model;
+﻿using DotnetApi.Model;
 
-public sealed record PostResponse
+namespace DotnetApi.Dto.PostApi;
+
+public sealed record PostGetAllResponse
 {
 #nullable disable
     public Guid Id { get; set; }
@@ -11,9 +13,9 @@ public sealed record PostResponse
     public bool HasBeenModified { get; set; }
 #nullable restore
 
-    public static explicit operator PostResponse(Post post)
+    public static explicit operator PostGetAllResponse(Post post)
     {
-        return new PostResponse
+        return new PostGetAllResponse
         {
             Id = post.Id,
             Title = post.Title,

@@ -1,10 +1,11 @@
 ﻿using DotnetApi.Constant;
+using DotnetApi.Model;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
-namespace DotnetApi.Model;
+namespace DotnetApi.Dto.CommentApi;
 
-public sealed record CommentRequest
+public sealed record CommentPutRequest
 {
 #nullable disable
     public Guid PostId { get; set; }
@@ -12,7 +13,7 @@ public sealed record CommentRequest
     public string CreatedUserEmail { get; set; }
 #nullable restore
 
-    public static explicit operator Comment(CommentRequest request)
+    public static explicit operator Comment(CommentPutRequest request)
     {
         return new Comment
         {
@@ -23,7 +24,7 @@ public sealed record CommentRequest
         };
     }
 
-    public class Validator : AbstractValidator<CommentRequest>
+    public class Validator : AbstractValidator<CommentPutRequest>
     {
         public Validator(AppDbContext context)
         {

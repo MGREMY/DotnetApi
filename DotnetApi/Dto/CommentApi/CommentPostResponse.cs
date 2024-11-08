@@ -1,6 +1,8 @@
-﻿namespace DotnetApi.Model;
+﻿using DotnetApi.Model;
 
-public sealed record CommentResponse
+namespace DotnetApi.Dto.CommentApi;
+
+public sealed record CommentPostResponse
 {
 #nullable disable
     public Guid Id { get; set; }
@@ -10,10 +12,10 @@ public sealed record CommentResponse
     public DateTime CreatedAtUtc { get; set; }
     public bool HasBeenModified { get; set; }
 #nullable restore
-    
-    public static explicit operator CommentResponse(Comment comment)
+
+    public static explicit operator CommentPostResponse(Comment comment)
     {
-        return new CommentResponse
+        return new CommentPostResponse
         {
             Id = comment.Id,
             PostId = comment.PostId,

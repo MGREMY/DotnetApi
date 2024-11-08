@@ -1,8 +1,9 @@
-﻿using FluentValidation;
+﻿using DotnetApi.Model;
+using FluentValidation;
 
-namespace DotnetApi.Model;
+namespace DotnetApi.Dto.PostApi;
 
-public sealed record PostRequest
+public sealed record PostPostRequest
 {
 #nullable disable
     public required string Title { get; set; }
@@ -10,7 +11,7 @@ public sealed record PostRequest
     public required string CreatedUserEmail { get; set; }
 #nullable restore
 
-    public static explicit operator Post(PostRequest request)
+    public static explicit operator Post(PostPostRequest request)
     {
         return new Post
         {
@@ -21,7 +22,7 @@ public sealed record PostRequest
         };
     }
 
-    public class Validator : AbstractValidator<PostRequest>
+    public class Validator : AbstractValidator<PostPostRequest>
     {
         public Validator()
         {
