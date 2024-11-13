@@ -64,6 +64,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseCors("CorsPolicy");
 
 if (bool.TryParse(app.Configuration["Api:AutoUpdateDb"], out var autoUpdateDb))
 {

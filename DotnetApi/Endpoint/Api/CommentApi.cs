@@ -1,6 +1,5 @@
 ﻿using DotnetApi.Dto.CommentApi;
 using DotnetApi.Model;
-using DotnetApi.Model.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;

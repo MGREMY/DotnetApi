@@ -10,7 +10,6 @@ public sealed record PostPostCommentRequest
 #nullable disable
     public Guid PostId { get; set; }
     public string Content { get; set; }
-    public string CreatedUserEmail { get; set; }
 #nullable restore
 
     public static explicit operator Comment(PostPostCommentRequest request)
@@ -20,7 +19,6 @@ public sealed record PostPostCommentRequest
             Id = Guid.Empty,
             PostId = request.PostId,
             Content = request.Content,
-            CreatedUserEmail = request.CreatedUserEmail,
         };
     }
 
@@ -34,8 +32,6 @@ public sealed record PostPostCommentRequest
                     await context.Posts.AnyAsync(x => x.Id == postId, cancellationToken))
                 .WithMessage(ValidationMessage.PostNotFound);
             RuleFor(x => x.Content)
-                .NotEmpty();
-            RuleFor(x => x.CreatedUserEmail)
                 .NotEmpty();
         }
     }

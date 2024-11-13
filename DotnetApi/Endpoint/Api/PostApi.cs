@@ -1,4 +1,6 @@
-﻿using DotnetApi.Dto.PostApi;
+﻿using System.Security.Claims;
+using DotnetApi.Dto.PostApi;
+using DotnetApi.Extension;
 using DotnetApi.Model;
 using DotnetApi.Model.Interface;
 using Microsoft.AspNetCore.Authorization;
@@ -78,10 +80,15 @@ public static class PostApi
             : TypedResults.Ok(post);
     }
 
-    private static async Task<Results<Created<PostPostResponse>, BadRequest>> Post([FromBody] PostPostRequest request,
-        AppDbContext context, CancellationToken cancellationToken)
+    private static async Task<Results<Created<PostPostResponse>, BadRequest>> Post(
+        [FromBody] PostPostRequest request, ClaimsPrincipal user, AppDbContext context,
+        CancellationToken cancellationToken)
     {
         var post = ((Post)request).SetCreatedAtData();
+
+        if (!user.TryGetUserEmail(out var email)) return TypedResults.BadRequest();
+
+        post.CreatedUserEmail = email;
 
         await context.Posts.AddAsync(post, cancellationToken);
 
@@ -148,12 +155,16 @@ public static class PostApi
     }
 
     private static async Task<Results<Created<PostPostCommentResponse>, BadRequest, NotFound>> PostComment(
-        [FromRoute] Guid postId, [FromBody] PostPostCommentRequest request, AppDbContext context,
+        [FromRoute] Guid postId, [FromBody] PostPostCommentRequest request, ClaimsPrincipal user, AppDbContext context,
         CancellationToken cancellationToken)
     {
         if (postId != request.PostId) return TypedResults.BadRequest();
 
         var comment = ((Comment)request).SetCreatedAtData();
+
+        if (!user.TryGetUserEmail(out var email)) return TypedResults.BadRequest();
+
+        comment.CreatedUserEmail = email;
 
         await context.Comments.AddAsync(comment, cancellationToken);
 
