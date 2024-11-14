@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace DotnetApi.Model;
 
 [EntityTypeConfiguration(typeof(PostEntityConfiguration))]
-public partial class Post : ISoftDeletable, ICreatedAt, IModifiable
+public partial class Post : IBaseEntity<Guid>, ISoftDeletable, ICreatedAt, IModifiable
 {
 #nullable disable
     public Guid Id { get; set; }
@@ -26,11 +26,12 @@ internal sealed class PostEntityConfiguration : IEntityTypeConfiguration<Post>
 {
     public void Configure(EntityTypeBuilder<Post> builder)
     {
-        builder.AddSoftDeletion()
+        builder
+            .AddBaseEntity<Post, Guid>()
+            .AddSoftDeletion()
             .AddCreatedAt()
             .AddModifiable();
 
-        builder.HasKey(x => x.Id);
 
         builder.Property(p => p.Title)
             .HasMaxLength(50)

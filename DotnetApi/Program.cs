@@ -17,7 +17,6 @@ builder.AddAuthentication()
     .AddValidation()
     .AddOpenApi();
 
-builder.Services.AddEndpointsApiExplorer();
 var app = builder.Build();
 
 app.MapApiEndpoints();
