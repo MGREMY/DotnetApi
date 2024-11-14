@@ -1,12 +1,8 @@
 using DotnetApi;
 using DotnetApi.Endpoint;
 using DotnetApi.Setup;
-using FluentValidation;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
-using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
@@ -16,45 +12,19 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
 });
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        In = ParameterLocation.Header,
-        Description = "Api token",
-        Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey,
-        BearerFormat = "JWT",
-        Scheme = "Bearer",
-    });
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer",
-                }
-            },
-            []
-        }
-    });
-});
-
 builder.AddAuthentication()
     .AddAuthorization()
-    .AddValidation();
+    .AddValidation()
+    .AddOpenApi();
 
+builder.Services.AddEndpointsApiExplorer();
 var app = builder.Build();
 
 app.MapApiEndpoints();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger(options => { options.RouteTemplate = "openapi/{documentName}.json"; });
+    app.MapOpenApi();
     app.MapScalarApiReference(options =>
     {
         options
