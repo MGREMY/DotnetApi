@@ -1,4 +1,5 @@
 ﻿using DotnetApi.Constant;
+using DotnetApi.Extension;
 using DotnetApi.Model;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ namespace DotnetApi.Dto.CommentApi;
 public sealed record CommentPutRequest
 {
 #nullable disable
+    public Guid CommentId { get; set; }
     public Guid PostId { get; set; }
     public string Content { get; set; }
 #nullable restore
@@ -16,7 +18,7 @@ public sealed record CommentPutRequest
     {
         return new Comment
         {
-            Id = Guid.Empty,
+            Id = request.CommentId,
             PostId = request.PostId,
             Content = request.Content,
         };
@@ -28,9 +30,10 @@ public sealed record CommentPutRequest
         {
             RuleFor(x => x.PostId)
                 .NotEmpty()
+                .WithFormatMessageForProperty(ValidationMessages.NotEmpty)
                 .MustAsync(async (postId, cancellationToken) =>
                     await context.Posts.AnyAsync(x => x.Id == postId, cancellationToken))
-                .WithMessage(ValidationMessage.PostNotFound);
+                .WithFormatMessage(ValidationMessages.NotFound, nameof(Post));
             RuleFor(x => x.Content)
                 .NotEmpty();
         }

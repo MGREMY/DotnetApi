@@ -84,9 +84,9 @@ public static class PostApi
         [FromBody] PostPostRequest request, ClaimsPrincipal user, AppDbContext context,
         CancellationToken cancellationToken)
     {
-        var post = ((Post)request).SetCreatedAtData();
-
         if (!user.TryGetUserEmail(out var email)) return TypedResults.BadRequest();
+
+        var post = ((Post)request).SetCreatedAtData();
 
         post.CreatedUserEmail = email;
 
@@ -97,29 +97,28 @@ public static class PostApi
             : TypedResults.BadRequest();
     }
 
-    private static async Task<Results<Ok<PostPutResponse>, BadRequest, NotFound>> Put([FromBody] PostPutRequest request,
-        [FromRoute] Guid postId, AppDbContext context, CancellationToken cancellationToken)
+    private static async Task<Results<Ok<PostPutResponse>, BadRequest, NotFound, UnauthorizedHttpResult>> Put(
+        [FromBody] PostPutRequest request, [FromRoute] Guid postId, ClaimsPrincipal user, AppDbContext context,
+        CancellationToken cancellationToken)
     {
+        if (!user.TryGetUserEmail(out var userEmail)) return TypedResults.BadRequest();
+
         if (postId != request.PostId) return TypedResults.BadRequest();
 
-        var result = await context.Posts.Where(x => x.Id == postId)
-            .ExecuteUpdateAsync(x =>
-                    x.SetProperty(p => p.Title, request.Title)
-                        .SetProperty(p => p.Content, request.Content)
-                        .SetProperty(p => p.HasBeenModified, true),
-                cancellationToken);
+        var post = await context.Posts.FindAsync([postId], cancellationToken);
+
+        if (post is null) return TypedResults.NotFound();
+
+        if (post.CreatedUserEmail != userEmail) return TypedResults.Unauthorized();
+
+        post.Content = request.Content;
+        post.HasBeenModified = true;
+
+        var result = await context.SaveChangesAsync(cancellationToken);
 
         return result > 0
-            ? TypedResults.Ok(await context.Posts.Select<Post, PostPutResponse>(x => new PostPutResponse
-            {
-                PostId = x.Id,
-                Title = x.Title,
-                Content = x.Content,
-                CreatedUserEmail = x.CreatedUserEmail,
-                CreatedAtUtc = x.CreatedAtUtc,
-                HasBeenModified = x.HasBeenModified,
-            }).FirstOrDefaultAsync(x => x.PostId == postId, cancellationToken))
-            : TypedResults.NotFound();
+            ? TypedResults.Ok((PostPutResponse)post)
+            : TypedResults.BadRequest();
     }
 
     private static async Task<Results<Ok, NotFound>> Delete([FromRoute] Guid postId, AppDbContext context,
@@ -158,11 +157,13 @@ public static class PostApi
         [FromRoute] Guid postId, [FromBody] PostPostCommentRequest request, ClaimsPrincipal user, AppDbContext context,
         CancellationToken cancellationToken)
     {
+        if (!user.TryGetUserEmail(out var email)) return TypedResults.BadRequest();
+
         if (postId != request.PostId) return TypedResults.BadRequest();
 
-        var comment = ((Comment)request).SetCreatedAtData();
+        if (!await context.Posts.AnyAsync(x => x.Id == postId, cancellationToken)) return TypedResults.NotFound();
 
-        if (!user.TryGetUserEmail(out var email)) return TypedResults.BadRequest();
+        var comment = ((Comment)request).SetCreatedAtData();
 
         comment.CreatedUserEmail = email;
 

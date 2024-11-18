@@ -1,4 +1,6 @@
-﻿using DotnetApi.Dto.CommentApi;
+﻿using System.Security.Claims;
+using DotnetApi.Dto.CommentApi;
+using DotnetApi.Extension;
 using DotnetApi.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -74,26 +76,26 @@ public static class CommentApi
             : TypedResults.Ok(comment);
     }
 
-    private static async Task<Results<Ok<CommentPutResponse>, NotFound>> Put([FromBody] CommentPutRequest request,
-        [FromRoute] Guid commentId, AppDbContext context, CancellationToken cancellationToken)
+    private static async Task<Results<Ok<CommentPutResponse>, NotFound, BadRequest, UnauthorizedHttpResult>> Put(
+        [FromBody] CommentPutRequest request, [FromRoute] Guid commentId,
+        ClaimsPrincipal user, AppDbContext context, CancellationToken cancellationToken)
     {
-        var result = await context.Comments.Where(x => x.Id == commentId)
-            .ExecuteUpdateAsync(x =>
-                    x.SetProperty(p => p.Content, request.Content)
-                        .SetProperty(p => p.HasBeenModified, true),
-                cancellationToken);
+        if (!user.TryGetUserEmail(out var userEmail)) return TypedResults.BadRequest();
 
-        return result > 0
-            ? TypedResults.Ok(await context.Comments.Select<Comment, CommentPutResponse>(x => new CommentPutResponse
-            {
-                CommentId = x.Id,
-                PostId = x.PostId,
-                Content = x.Content,
-                CreatedUserEmail = x.CreatedUserEmail,
-                CreatedAtUtc = x.CreatedAtUtc,
-                HasBeenModified = x.HasBeenModified,
-            }).FirstOrDefaultAsync(x => x.CommentId == commentId, cancellationToken))
-            : TypedResults.NotFound();
+        if (commentId != request.CommentId) return TypedResults.BadRequest();
+
+        var comment = await context.Comments.FindAsync([commentId], cancellationToken);
+
+        if (comment is null) return TypedResults.NotFound();
+
+        if (comment.CreatedUserEmail != userEmail) return TypedResults.Unauthorized();
+
+        comment.Content = request.Content;
+        comment.HasBeenModified = true;
+
+        await context.SaveChangesAsync(cancellationToken);
+
+        return TypedResults.Ok((CommentPutResponse)comment);
     }
 
     private static async Task<Results<Ok, NotFound>> Delete([FromRoute] Guid commentId,

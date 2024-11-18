@@ -1,4 +1,5 @@
 ﻿using DotnetApi.Constant;
+using DotnetApi.Extension;
 using DotnetApi.Model;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
@@ -28,9 +29,10 @@ public sealed record PostPostCommentRequest
         {
             RuleFor(x => x.PostId)
                 .NotEmpty()
+                .WithFormatMessageForProperty(ValidationMessages.NotEmpty)
                 .MustAsync(async (postId, cancellationToken) =>
                     await context.Posts.AnyAsync(x => x.Id == postId, cancellationToken))
-                .WithMessage(ValidationMessage.PostNotFound);
+                .WithFormatMessage(ValidationMessages.NotFound, nameof(Post));
             RuleFor(x => x.Content)
                 .NotEmpty();
         }

@@ -1,4 +1,6 @@
-﻿using DotnetApi.Model;
+﻿using DotnetApi.Constant;
+using DotnetApi.Extension;
+using DotnetApi.Model;
 using FluentValidation;
 
 namespace DotnetApi.Dto.PostApi;
@@ -26,9 +28,11 @@ public sealed record PostPutRequest
         public Validator()
         {
             RuleFor(x => x.Title)
-                .NotEmpty();
+                .NotEmpty()
+                .WithFormatMessageForProperty(ValidationMessages.NotEmpty);
             RuleFor(x => x.Content)
-                .NotEmpty();
+                .NotEmpty()
+                .WithFormatMessageForProperty(ValidationMessages.NotEmpty);
         }
     }
 }
