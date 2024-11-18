@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using DotnetApi.Dto;
 using DotnetApi.Dto.CommentApi;
 using DotnetApi.Extension;
 using DotnetApi.Model;
@@ -41,11 +42,11 @@ public static class CommentApi
         return builder;
     }
 
-    private static async Task<Ok<CommentGetAllResponse[]>> GetAll(AppDbContext context,
+    private static async Task<Ok<CommentDto[]>> GetAll(AppDbContext context,
         CancellationToken cancellationToken)
     {
         var comments = await context.Comments
-            .Select<Comment, CommentGetAllResponse>(x => new CommentGetAllResponse
+            .Select<Comment, CommentDto>(x => new CommentDto
             {
                 CommentId = x.Id,
                 PostId = x.PostId,
@@ -58,10 +59,10 @@ public static class CommentApi
         return TypedResults.Ok(comments);
     }
 
-    private static async Task<Results<Ok<CommentGetResponse>, NotFound>> Get([FromRoute] Guid commentId,
+    private static async Task<Results<Ok<CommentDto>, NotFound>> Get([FromRoute] Guid commentId,
         AppDbContext context, CancellationToken cancellationToken)
     {
-        var comment = await context.Comments.Select(x => new CommentGetResponse
+        var comment = await context.Comments.Select(x => new CommentDto
         {
             CommentId = x.Id,
             PostId = x.PostId,
@@ -76,7 +77,7 @@ public static class CommentApi
             : TypedResults.Ok(comment);
     }
 
-    private static async Task<Results<Ok<CommentPutResponse>, NotFound, BadRequest, UnauthorizedHttpResult>> Put(
+    private static async Task<Results<Ok<CommentDto>, NotFound, BadRequest, UnauthorizedHttpResult>> Put(
         [FromBody] CommentPutRequest request, [FromRoute] Guid commentId,
         ClaimsPrincipal user, AppDbContext context, CancellationToken cancellationToken)
     {
@@ -95,7 +96,7 @@ public static class CommentApi
 
         await context.SaveChangesAsync(cancellationToken);
 
-        return TypedResults.Ok((CommentPutResponse)comment);
+        return TypedResults.Ok((CommentDto)comment);
     }
 
     private static async Task<Results<Ok, NotFound>> Delete([FromRoute] Guid commentId,

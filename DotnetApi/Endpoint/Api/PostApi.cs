@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using DotnetApi.Dto;
 using DotnetApi.Dto.PostApi;
 using DotnetApi.Extension;
 using DotnetApi.Model;
@@ -45,11 +46,11 @@ public static class PostApi
         return builder;
     }
 
-    private static async Task<Ok<PostGetAllResponse[]>> GetAll(AppDbContext context,
+    private static async Task<Ok<PostDto[]>> GetAll(AppDbContext context,
         CancellationToken cancellationToken)
     {
         var posts = await context.Posts
-            .Select<Post, PostGetAllResponse>(x => new PostGetAllResponse
+            .Select<Post, PostDto>(x => new PostDto
             {
                 PostId = x.Id,
                 Title = x.Title,
@@ -62,10 +63,10 @@ public static class PostApi
         return TypedResults.Ok(posts);
     }
 
-    private static async Task<Results<Ok<PostGetResponse>, NotFound>> Get([FromRoute] Guid postId, AppDbContext context,
+    private static async Task<Results<Ok<PostDto>, NotFound>> Get([FromRoute] Guid postId, AppDbContext context,
         CancellationToken cancellationToken)
     {
-        var post = await context.Posts.Select<Post, PostGetResponse>(x => new PostGetResponse
+        var post = await context.Posts.Select<Post, PostDto>(x => new PostDto
         {
             PostId = x.Id,
             Title = x.Title,
@@ -80,7 +81,7 @@ public static class PostApi
             : TypedResults.Ok(post);
     }
 
-    private static async Task<Results<Created<PostPostResponse>, BadRequest>> Post(
+    private static async Task<Results<Created<PostDto>, BadRequest>> Post(
         [FromBody] PostPostRequest request, ClaimsPrincipal user, AppDbContext context,
         CancellationToken cancellationToken)
     {
@@ -93,11 +94,11 @@ public static class PostApi
         await context.Posts.AddAsync(post, cancellationToken);
 
         return await context.SaveChangesAsync(cancellationToken) > 0
-            ? TypedResults.Created($"/{post.Id}", (PostPostResponse)post)
+            ? TypedResults.Created($"/{post.Id}", (PostDto)post)
             : TypedResults.BadRequest();
     }
 
-    private static async Task<Results<Ok<PostPutResponse>, BadRequest, NotFound, UnauthorizedHttpResult>> Put(
+    private static async Task<Results<Ok<PostDto>, BadRequest, NotFound, UnauthorizedHttpResult>> Put(
         [FromBody] PostPutRequest request, [FromRoute] Guid postId, ClaimsPrincipal user, AppDbContext context,
         CancellationToken cancellationToken)
     {
@@ -117,7 +118,7 @@ public static class PostApi
         var result = await context.SaveChangesAsync(cancellationToken);
 
         return result > 0
-            ? TypedResults.Ok((PostPutResponse)post)
+            ? TypedResults.Ok((PostDto)post)
             : TypedResults.BadRequest();
     }
 
@@ -135,12 +136,12 @@ public static class PostApi
             : TypedResults.NotFound();
     }
 
-    private static async Task<Results<Ok<PostGetCommentsResponse[]>, NotFound>> GetComments([FromRoute] Guid postId,
+    private static async Task<Results<Ok<CommentDto[]>, NotFound>> GetComments([FromRoute] Guid postId,
         AppDbContext context, CancellationToken cancellationToken)
     {
         if (!await context.Posts.AnyAsync(x => x.Id == postId, cancellationToken)) return TypedResults.NotFound();
 
-        var comments = await context.Comments.Select<Comment, PostGetCommentsResponse>(x => new PostGetCommentsResponse
+        var comments = await context.Comments.Select<Comment, CommentDto>(x => new CommentDto
         {
             CommentId = x.Id,
             PostId = x.PostId,
@@ -153,7 +154,7 @@ public static class PostApi
         return TypedResults.Ok(comments);
     }
 
-    private static async Task<Results<Created<PostPostCommentResponse>, BadRequest, NotFound>> PostComment(
+    private static async Task<Results<Created<CommentDto>, BadRequest, NotFound>> PostComment(
         [FromRoute] Guid postId, [FromBody] PostPostCommentRequest request, ClaimsPrincipal user, AppDbContext context,
         CancellationToken cancellationToken)
     {
@@ -170,7 +171,7 @@ public static class PostApi
         await context.Comments.AddAsync(comment, cancellationToken);
 
         return await context.SaveChangesAsync(cancellationToken) > 0
-            ? TypedResults.Created($"/{comment.Id}", (PostPostCommentResponse)comment)
+            ? TypedResults.Created($"/{comment.Id}", (CommentDto)comment)
             : TypedResults.BadRequest();
     }
 }
