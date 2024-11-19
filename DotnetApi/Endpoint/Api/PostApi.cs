@@ -25,7 +25,7 @@ public static class PostApi
         group.MapPut("/{postId:guid}", Put).RequireAuthorization("post:rw");
         group.MapDelete("/{postId:guid}", Delete).RequireAuthorization("post:d");
         group.MapGet("/{postId:guid}/comments", GetComments).RequireAuthorization("post:r", "comment:r");
-        group.MapPost("/{postId:guid}/comment", PostComment).RequireAuthorization("post:rw", "comment:rw");
+        group.MapPost("/{postId:guid}/comments", PostComment).RequireAuthorization("post:rw", "comment:rw");
 
         return builder;
     }
@@ -104,8 +104,6 @@ public static class PostApi
     {
         if (!user.TryGetUserEmail(out var userEmail)) return TypedResults.BadRequest();
 
-        if (postId != request.PostId) return TypedResults.BadRequest();
-
         var post = await context.Posts.FindAsync([postId], cancellationToken);
 
         if (post is null) return TypedResults.NotFound();
@@ -159,8 +157,6 @@ public static class PostApi
         CancellationToken cancellationToken)
     {
         if (!user.TryGetUserEmail(out var email)) return TypedResults.BadRequest();
-
-        if (postId != request.PostId) return TypedResults.BadRequest();
 
         if (!await context.Posts.AnyAsync(x => x.Id == postId, cancellationToken)) return TypedResults.NotFound();
 

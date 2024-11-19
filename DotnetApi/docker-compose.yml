@@ -13,6 +13,11 @@ services:
       MARIADB_DATABASE: DotnetApi
     ports:
       - "3306:3306"
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 250M
 
   adminer:
     image: adminer

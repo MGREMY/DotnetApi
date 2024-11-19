@@ -83,8 +83,6 @@ public static class CommentApi
     {
         if (!user.TryGetUserEmail(out var userEmail)) return TypedResults.BadRequest();
 
-        if (commentId != request.CommentId) return TypedResults.BadRequest();
-
         var comment = await context.Comments.FindAsync([commentId], cancellationToken);
 
         if (comment is null) return TypedResults.NotFound();

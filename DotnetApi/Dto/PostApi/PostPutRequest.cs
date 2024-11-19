@@ -8,7 +8,6 @@ namespace DotnetApi.Dto.PostApi;
 public sealed record PostPutRequest
 {
 #nullable disable
-    public Guid PostId { get; set; }
     public string Title { get; set; }
     public string Content { get; set; }
 #nullable restore
@@ -17,7 +16,6 @@ public sealed record PostPutRequest
     {
         return new Post
         {
-            Id = request.PostId,
             Title = request.Title,
             Content = request.Content,
         };
