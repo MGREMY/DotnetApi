@@ -6,7 +6,7 @@ using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
-builder.Services.AddDbContext<AppDbContext>(options =>
+builder.Services.AddDbContextPool<AppDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
