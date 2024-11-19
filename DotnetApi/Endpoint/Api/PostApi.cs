@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using DotnetApi.Dto;
+using DotnetApi.Dto.Pagination;
 using DotnetApi.Dto.PostApi;
 using DotnetApi.Extension;
 using DotnetApi.Model;
@@ -46,10 +47,11 @@ public static class PostApi
         return builder;
     }
 
-    private static async Task<Ok<PostDto[]>> GetAll(AppDbContext context,
-        CancellationToken cancellationToken)
+    private static async Task<Ok<PagedResponse<PostDto>>> GetAll([AsParameters] PaginationRequest pagination,
+        AppDbContext context, CancellationToken cancellationToken)
     {
         var posts = await context.Posts
+            .ApplyPagination(pagination)
             .Select<Post, PostDto>(x => new PostDto
             {
                 PostId = x.Id,
@@ -58,7 +60,7 @@ public static class PostApi
                 CreatedUserEmail = x.CreatedUserEmail,
                 CreatedAtUtc = x.CreatedAtUtc,
                 HasBeenModified = x.HasBeenModified,
-            }).ToArrayAsync(cancellationToken);
+            }).ToPagedResponseAsync(pagination, token => context.Posts.CountAsync(token), cancellationToken);
 
         return TypedResults.Ok(posts);
     }

@@ -5,10 +5,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace DotnetApi.Model;
 
 [EntityTypeConfiguration(typeof(PostEntityConfiguration))]
-public partial class Post : IBaseEntity<Guid>, ISoftDeletable, ICreatedAt, IModifiable
+public partial class Post : BaseEntity<Guid>, ISoftDeletable, ICreatedAt, IModifiable
 {
 #nullable disable
-    public Guid Id { get; set; }
     public string Title { get; set; }
     public string Content { get; set; }
     public string CreatedUserEmail { get; set; }

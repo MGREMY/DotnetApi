@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using DotnetApi.Dto;
 using DotnetApi.Dto.CommentApi;
+using DotnetApi.Dto.Pagination;
 using DotnetApi.Extension;
 using DotnetApi.Model;
 using Microsoft.AspNetCore.Authorization;
@@ -42,10 +43,12 @@ public static class CommentApi
         return builder;
     }
 
-    private static async Task<Ok<CommentDto[]>> GetAll(AppDbContext context,
+    private static async Task<Ok<PagedResponse<CommentDto>>> GetAll([AsParameters] PaginationRequest pagination,
+        AppDbContext context,
         CancellationToken cancellationToken)
     {
         var comments = await context.Comments
+            .ApplyPagination(pagination)
             .Select<Comment, CommentDto>(x => new CommentDto
             {
                 CommentId = x.Id,
@@ -54,7 +57,7 @@ public static class CommentApi
                 CreatedUserEmail = x.CreatedUserEmail,
                 CreatedAtUtc = x.CreatedAtUtc,
                 HasBeenModified = x.HasBeenModified,
-            }).ToArrayAsync(cancellationToken);
+            }).ToPagedResponseAsync(pagination, token => context.Comments.CountAsync(token), cancellationToken);
 
         return TypedResults.Ok(comments);
     }

@@ -5,10 +5,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace DotnetApi.Model;
 
 [EntityTypeConfiguration(typeof(CommentEntityConfiguration))]
-public partial class Comment : IBaseEntity<Guid>, ISoftDeletable, ICreatedAt, IModifiable
+public partial class Comment : BaseEntity<Guid>, ISoftDeletable, ICreatedAt, IModifiable
 {
 #nullable disable
-    public Guid Id { get; set; }
     public Guid PostId { get; set; }
     public string Content { get; set; }
     public string CreatedUserEmail { get; set; }
