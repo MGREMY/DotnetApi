@@ -10,7 +10,7 @@ public static class DbSetExtensions
         where T : class, IBaseEntity
     {
         return set
-            .OrderBy(x => x.Id)
+            .OrderBy(entity => entity.Id)
             .Skip((pagination.PageNumber - 1) * pagination.PageSize)
             .Take(pagination.PageSize);
     }

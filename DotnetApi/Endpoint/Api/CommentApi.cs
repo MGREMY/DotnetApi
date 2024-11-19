@@ -49,15 +49,15 @@ public static class CommentApi
     {
         var comments = await context.Comments
             .ApplyPagination(pagination)
-            .Select<Comment, CommentDto>(x => new CommentDto
+            .Select<Comment, CommentDto>(comment => new CommentDto
             {
-                CommentId = x.Id,
-                PostId = x.PostId,
-                Content = x.Content,
-                CreatedUserEmail = x.CreatedUserEmail,
-                CreatedAtUtc = x.CreatedAtUtc,
-                HasBeenModified = x.HasBeenModified,
-            }).ToPagedResponseAsync(pagination, token => context.Comments.CountAsync(token), cancellationToken);
+                CommentId = comment.Id,
+                PostId = comment.PostId,
+                Content = comment.Content,
+                CreatedUserEmail = comment.CreatedUserEmail,
+                CreatedAtUtc = comment.CreatedAtUtc,
+                HasBeenModified = comment.HasBeenModified,
+            }).ToPagedResponseAsync(pagination, context.Comments.CountAsync, cancellationToken);
 
         return TypedResults.Ok(comments);
     }
@@ -65,14 +65,14 @@ public static class CommentApi
     private static async Task<Results<Ok<CommentDto>, NotFound>> Get([FromRoute] Guid commentId,
         AppDbContext context, CancellationToken cancellationToken)
     {
-        var comment = await context.Comments.Select(x => new CommentDto
+        var comment = await context.Comments.Select(comment => new CommentDto
         {
-            CommentId = x.Id,
-            PostId = x.PostId,
-            Content = x.Content,
-            CreatedUserEmail = x.CreatedUserEmail,
-            CreatedAtUtc = x.CreatedAtUtc,
-            HasBeenModified = x.HasBeenModified,
+            CommentId = comment.Id,
+            PostId = comment.PostId,
+            Content = comment.Content,
+            CreatedUserEmail = comment.CreatedUserEmail,
+            CreatedAtUtc = comment.CreatedAtUtc,
+            HasBeenModified = comment.HasBeenModified,
         }).FirstOrDefaultAsync(x => x.CommentId == commentId, cancellationToken);
 
         return comment is null
@@ -103,7 +103,7 @@ public static class CommentApi
     private static async Task<Results<Ok, NotFound>> Delete([FromRoute] Guid commentId,
         AppDbContext context, CancellationToken cancellationToken)
     {
-        var result = await context.Comments.Where(x => x.Id == commentId)
+        var result = await context.Comments.Where(comment => comment.Id == commentId)
             .ExecuteUpdateAsync(x =>
                     x.SetProperty(p => p.IsDeleted, true)
                         .SetProperty(p => p.DeletedAtUtc, DateTime.UtcNow),

@@ -52,15 +52,15 @@ public static class PostApi
     {
         var posts = await context.Posts
             .ApplyPagination(pagination)
-            .Select<Post, PostDto>(x => new PostDto
+            .Select<Post, PostDto>(post => new PostDto
             {
-                PostId = x.Id,
-                Title = x.Title,
-                Content = x.Content,
-                CreatedUserEmail = x.CreatedUserEmail,
-                CreatedAtUtc = x.CreatedAtUtc,
-                HasBeenModified = x.HasBeenModified,
-            }).ToPagedResponseAsync(pagination, token => context.Posts.CountAsync(token), cancellationToken);
+                PostId = post.Id,
+                Title = post.Title,
+                Content = post.Content,
+                CreatedUserEmail = post.CreatedUserEmail,
+                CreatedAtUtc = post.CreatedAtUtc,
+                HasBeenModified = post.HasBeenModified,
+            }).ToPagedResponseAsync(pagination, context.Posts.CountAsync, cancellationToken);
 
         return TypedResults.Ok(posts);
     }
@@ -68,14 +68,14 @@ public static class PostApi
     private static async Task<Results<Ok<PostDto>, NotFound>> Get([FromRoute] Guid postId, AppDbContext context,
         CancellationToken cancellationToken)
     {
-        var post = await context.Posts.Select<Post, PostDto>(x => new PostDto
+        var post = await context.Posts.Select<Post, PostDto>(post => new PostDto
         {
-            PostId = x.Id,
-            Title = x.Title,
-            Content = x.Content,
-            CreatedUserEmail = x.CreatedUserEmail,
-            CreatedAtUtc = x.CreatedAtUtc,
-            HasBeenModified = x.HasBeenModified,
+            PostId = post.Id,
+            Title = post.Title,
+            Content = post.Content,
+            CreatedUserEmail = post.CreatedUserEmail,
+            CreatedAtUtc = post.CreatedAtUtc,
+            HasBeenModified = post.HasBeenModified,
         }).FirstOrDefaultAsync(x => x.PostId == postId, cancellationToken);
 
         return post is null
@@ -125,7 +125,7 @@ public static class PostApi
     private static async Task<Results<Ok, NotFound>> Delete([FromRoute] Guid postId, AppDbContext context,
         CancellationToken cancellationToken)
     {
-        var result = await context.Posts.Where(x => x.Id == postId)
+        var result = await context.Posts.Where(post => post.Id == postId)
             .ExecuteUpdateAsync(x =>
                     x.SetProperty(p => p.IsDeleted, true)
                         .SetProperty(p => p.DeletedAtUtc, DateTime.UtcNow),
@@ -139,16 +139,16 @@ public static class PostApi
     private static async Task<Results<Ok<CommentDto[]>, NotFound>> GetComments([FromRoute] Guid postId,
         AppDbContext context, CancellationToken cancellationToken)
     {
-        if (!await context.Posts.AnyAsync(x => x.Id == postId, cancellationToken)) return TypedResults.NotFound();
+        if (!await context.Posts.AnyAsync(post => post.Id == postId, cancellationToken)) return TypedResults.NotFound();
 
-        var comments = await context.Comments.Select<Comment, CommentDto>(x => new CommentDto
+        var comments = await context.Comments.Select<Comment, CommentDto>(comment => new CommentDto
         {
-            CommentId = x.Id,
-            PostId = x.PostId,
-            Content = x.Content,
-            CreatedUserEmail = x.CreatedUserEmail,
-            CreatedAtUtc = x.CreatedAtUtc,
-            HasBeenModified = x.HasBeenModified,
+            CommentId = comment.Id,
+            PostId = comment.PostId,
+            Content = comment.Content,
+            CreatedUserEmail = comment.CreatedUserEmail,
+            CreatedAtUtc = comment.CreatedAtUtc,
+            HasBeenModified = comment.HasBeenModified,
         }).Where(x => x.PostId == postId).ToArrayAsync(cancellationToken);
 
         return TypedResults.Ok(comments);
@@ -160,7 +160,7 @@ public static class PostApi
     {
         if (!user.TryGetUserEmail(out var email)) return TypedResults.BadRequest();
 
-        if (!await context.Posts.AnyAsync(x => x.Id == postId, cancellationToken)) return TypedResults.NotFound();
+        if (!await context.Posts.AnyAsync(post => post.Id == postId, cancellationToken)) return TypedResults.NotFound();
 
         var comment = ((Comment)request).SetCreatedAtData();
 
