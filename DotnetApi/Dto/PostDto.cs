@@ -26,3 +26,21 @@ public record PostDto
         };
     }
 }
+
+public record PostExtendedDto : PostDto
+{
+    public IEnumerable<Comment> Comments { get; set; } = [];
+
+    public static explicit operator PostExtendedDto(Post post)
+    {
+        return new PostExtendedDto
+        {
+            PostId = post.Id,
+            Title = post.Title,
+            Content = post.Content,
+            CreatedUserEmail = post.CreatedUserEmail,
+            CreatedAtUtc = post.CreatedAtUtc,
+            HasBeenModified = post.HasBeenModified,
+        };
+    }
+}

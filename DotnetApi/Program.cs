@@ -27,7 +27,9 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference(options =>
     {
         options
-            .WithPreferredScheme("Bearer");
+            .WithPreferredScheme("Bearer")
+            .WithDefaultHttpClient(ScalarTarget.JavaScript, ScalarClient.Fetch)
+            .WithTheme(ScalarTheme.Kepler);
     });
 }
 

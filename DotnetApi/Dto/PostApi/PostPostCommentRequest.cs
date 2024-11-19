@@ -1,8 +1,5 @@
-﻿using DotnetApi.Constant;
-using DotnetApi.Extension;
-using DotnetApi.Model;
+﻿using DotnetApi.Model;
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
 
 namespace DotnetApi.Dto.PostApi;
 
