@@ -1,5 +1,5 @@
 ﻿using System.Security.Claims;
-using DotnetApi.Constant;
+using DotnetApi.Builder;
 using DotnetApi.Dto;
 using DotnetApi.Dto.Pagination;
 using DotnetApi.Dto.PostApi;
@@ -64,7 +64,11 @@ public static class PostApi
                 HasBeenModified = post.HasBeenModified,
             }).ToPagedResponseAsync(pagination, context.Posts.CountAsync, cancellationToken);
 
-        Log.Information(LoggingMessages.RetrievedArrayMessage, posts.Data.Count(), nameof(Model.Post));
+        new LoggingMessageBuilder()
+            .WithType(LoggingMessage.OperationType.Get)
+            .WithModelName<Model.Post>()
+            .WithCount(posts.Data.Count())
+            .BuildAndLogValue(Log.Debug);
 
         return TypedResults.Ok(posts);
     }
@@ -82,7 +86,12 @@ public static class PostApi
             HasBeenModified = post.HasBeenModified,
         }).FirstOrDefaultAsync(x => x.PostId == postId, cancellationToken);
 
-        Log.Information(LoggingMessages.RetrievedSingleMessage, postId, nameof(Model.Post), post);
+        new LoggingMessageBuilder()
+            .WithType(LoggingMessage.OperationType.Get)
+            .WithModelName<Model.Post>()
+            .WithId(postId)
+            .WithValue(post)
+            .BuildAndLogValue(Log.Debug);
 
         return post is null
             ? TypedResults.NotFound()
@@ -95,12 +104,17 @@ public static class PostApi
     {
         if (!user.TryGetUserEmail(out var userEmail)) return TypedResults.BadRequest();
 
-        Log.Information(LoggingMessages.CreateSingleMessage, nameof(Model.Post), request, userEmail);
+        new LoggingMessageBuilder()
+            .WithType(LoggingMessage.OperationType.Create)
+            .WithModelName<Model.Post>()
+            .WithUserEmail(userEmail)
+            .WithRequest(request)
+            .BuildAndLogValue(Log.Debug);
 
         var post = ((Post)request).SetCreatedAtData();
 
         post.CreatedUserEmail = userEmail;
-        
+
         await context.Posts.AddAsync(post, cancellationToken);
 
         return await context.SaveChangesAsync(cancellationToken) > 0
@@ -114,7 +128,13 @@ public static class PostApi
     {
         if (!user.TryGetUserEmail(out var userEmail)) return TypedResults.BadRequest();
 
-        Log.Information(LoggingMessages.UpdateSingleMessage, nameof(Model.Post), postId, request, userEmail);
+        new LoggingMessageBuilder()
+            .WithType(LoggingMessage.OperationType.Update)
+            .WithModelName<Model.Post>()
+            .WithId(postId)
+            .WithUserEmail(userEmail)
+            .WithRequest(request)
+            .BuildAndLogValue(Log.Debug);
 
         var post = await context.Posts.FindAsync([postId], cancellationToken);
 
@@ -124,7 +144,7 @@ public static class PostApi
 
         post.Content = request.Content;
         post.HasBeenModified = true;
-        
+
         var result = await context.SaveChangesAsync(cancellationToken);
 
         return result > 0
@@ -135,7 +155,11 @@ public static class PostApi
     private static async Task<Results<Ok, NotFound>> Delete([FromRoute] Guid postId, AppDbContext context,
         CancellationToken cancellationToken)
     {
-        Log.Information(LoggingMessages.DeleteSingleMessage, nameof(Model.Post), postId);
+        new LoggingMessageBuilder()
+            .WithType(LoggingMessage.OperationType.Delete)
+            .WithModelName<Model.Post>()
+            .WithId(postId)
+            .BuildAndLogValue(Log.Debug);
 
         var result = await context.Posts.Where(post => post.Id == postId)
             .ExecuteUpdateAsync(x =>
@@ -152,6 +176,11 @@ public static class PostApi
         AppDbContext context, CancellationToken cancellationToken)
     {
         if (!await context.Posts.AnyAsync(post => post.Id == postId, cancellationToken)) return TypedResults.NotFound();
+
+        new LoggingMessageBuilder()
+            .WithType(LoggingMessage.OperationType.Get)
+            .WithModelName<Model.Comment>()
+            .BuildAndLogValue(Log.Debug);
 
         var comments = await context.Comments.Select<Comment, CommentDto>(comment => new CommentDto
         {
@@ -173,6 +202,12 @@ public static class PostApi
         if (!user.TryGetUserEmail(out var email)) return TypedResults.BadRequest();
 
         if (!await context.Posts.AnyAsync(post => post.Id == postId, cancellationToken)) return TypedResults.NotFound();
+
+        new LoggingMessageBuilder()
+            .WithType(LoggingMessage.OperationType.Create)
+            .WithModelName<Model.Comment>()
+            .WithRequest(request)
+            .BuildAndLogValue(Log.Debug);
 
         var comment = ((Comment)request).SetCreatedAtData();
 

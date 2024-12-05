@@ -1,5 +1,5 @@
 ﻿using System.Security.Claims;
-using DotnetApi.Constant;
+using DotnetApi.Builder;
 using DotnetApi.Dto;
 using DotnetApi.Dto.CommentApi;
 using DotnetApi.Dto.Pagination;
@@ -61,7 +61,11 @@ public static class CommentApi
                 HasBeenModified = comment.HasBeenModified,
             }).ToPagedResponseAsync(pagination, context.Comments.CountAsync, cancellationToken);
 
-        Log.Information(LoggingMessages.RetrievedArrayMessage, comments.Data.Count(), nameof(Model.Comment));
+        new LoggingMessageBuilder()
+            .WithType(LoggingMessage.OperationType.Get)
+            .WithModelName<Model.Comment>()
+            .WithCount(comments.Data.Count())
+            .BuildAndLogValue(Log.Debug);
 
         return TypedResults.Ok(comments);
     }
@@ -79,7 +83,12 @@ public static class CommentApi
             HasBeenModified = comment.HasBeenModified,
         }).FirstOrDefaultAsync(x => x.CommentId == commentId, cancellationToken);
 
-        Log.Information(LoggingMessages.RetrievedSingleMessage, commentId, nameof(Model.Comment), comment);
+        new LoggingMessageBuilder()
+            .WithType(LoggingMessage.OperationType.Get)
+            .WithModelName<Model.Comment>()
+            .WithId(commentId)
+            .WithValue(comment)
+            .BuildAndLogValue(Log.Debug);
 
         return comment is null
             ? TypedResults.NotFound()
@@ -92,7 +101,13 @@ public static class CommentApi
     {
         if (!user.TryGetUserEmail(out var userEmail)) return TypedResults.BadRequest();
 
-        Log.Information(LoggingMessages.UpdateSingleMessage, nameof(Model.Comment), commentId, request, userEmail);
+        new LoggingMessageBuilder()
+            .WithType(LoggingMessage.OperationType.Update)
+            .WithModelName<Model.Comment>()
+            .WithId(commentId)
+            .WithUserEmail(userEmail)
+            .WithRequest(request)
+            .BuildAndLogValue(Log.Debug);
 
         var comment = await context.Comments.FindAsync([commentId], cancellationToken);
 
@@ -111,7 +126,11 @@ public static class CommentApi
     private static async Task<Results<Ok, NotFound>> Delete([FromRoute] Guid commentId,
         AppDbContext context, CancellationToken cancellationToken)
     {
-        Log.Information(LoggingMessages.DeleteSingleMessage, nameof(Model.Comment), commentId);
+        new LoggingMessageBuilder()
+            .WithType(LoggingMessage.OperationType.Delete)
+            .WithModelName<Model.Post>()
+            .WithId(commentId)
+            .BuildAndLogValue(Log.Debug);
 
         var result = await context.Comments.Where(comment => comment.Id == commentId)
             .ExecuteUpdateAsync(x =>
