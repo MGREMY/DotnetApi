@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using DotnetApi.Constant;
 using DotnetApi.Dto;
 using DotnetApi.Dto.CommentApi;
 using DotnetApi.Dto.Pagination;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace DotnetApi.Endpoint.Api;
 
@@ -59,6 +61,8 @@ public static class CommentApi
                 HasBeenModified = comment.HasBeenModified,
             }).ToPagedResponseAsync(pagination, context.Comments.CountAsync, cancellationToken);
 
+        Log.Information(LoggingMessages.RetrievedArrayMessage, comments.Data.Count(), nameof(Model.Comment));
+
         return TypedResults.Ok(comments);
     }
 
@@ -75,6 +79,8 @@ public static class CommentApi
             HasBeenModified = comment.HasBeenModified,
         }).FirstOrDefaultAsync(x => x.CommentId == commentId, cancellationToken);
 
+        Log.Information(LoggingMessages.RetrievedSingleMessage, commentId, nameof(Model.Comment), comment);
+
         return comment is null
             ? TypedResults.NotFound()
             : TypedResults.Ok(comment);
@@ -85,6 +91,8 @@ public static class CommentApi
         ClaimsPrincipal user, AppDbContext context, CancellationToken cancellationToken)
     {
         if (!user.TryGetUserEmail(out var userEmail)) return TypedResults.BadRequest();
+
+        Log.Information(LoggingMessages.UpdateSingleMessage, nameof(Model.Comment), commentId, request, userEmail);
 
         var comment = await context.Comments.FindAsync([commentId], cancellationToken);
 
@@ -103,6 +111,8 @@ public static class CommentApi
     private static async Task<Results<Ok, NotFound>> Delete([FromRoute] Guid commentId,
         AppDbContext context, CancellationToken cancellationToken)
     {
+        Log.Information(LoggingMessages.DeleteSingleMessage, nameof(Model.Comment), commentId);
+
         var result = await context.Comments.Where(comment => comment.Id == commentId)
             .ExecuteUpdateAsync(x =>
                     x.SetProperty(p => p.IsDeleted, true)

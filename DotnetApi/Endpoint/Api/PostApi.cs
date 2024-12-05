@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using DotnetApi.Constant;
 using DotnetApi.Dto;
 using DotnetApi.Dto.Pagination;
 using DotnetApi.Dto.PostApi;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace DotnetApi.Endpoint.Api;
 
@@ -62,6 +64,8 @@ public static class PostApi
                 HasBeenModified = post.HasBeenModified,
             }).ToPagedResponseAsync(pagination, context.Posts.CountAsync, cancellationToken);
 
+        Log.Information(LoggingMessages.RetrievedArrayMessage, posts.Data.Count(), nameof(Model.Post));
+
         return TypedResults.Ok(posts);
     }
 
@@ -78,6 +82,8 @@ public static class PostApi
             HasBeenModified = post.HasBeenModified,
         }).FirstOrDefaultAsync(x => x.PostId == postId, cancellationToken);
 
+        Log.Information(LoggingMessages.RetrievedSingleMessage, postId, nameof(Model.Post), post);
+
         return post is null
             ? TypedResults.NotFound()
             : TypedResults.Ok(post);
@@ -87,12 +93,14 @@ public static class PostApi
         [FromBody] PostPostRequest request, ClaimsPrincipal user, AppDbContext context,
         CancellationToken cancellationToken)
     {
-        if (!user.TryGetUserEmail(out var email)) return TypedResults.BadRequest();
+        if (!user.TryGetUserEmail(out var userEmail)) return TypedResults.BadRequest();
+
+        Log.Information(LoggingMessages.CreateSingleMessage, nameof(Model.Post), request, userEmail);
 
         var post = ((Post)request).SetCreatedAtData();
 
-        post.CreatedUserEmail = email;
-
+        post.CreatedUserEmail = userEmail;
+        
         await context.Posts.AddAsync(post, cancellationToken);
 
         return await context.SaveChangesAsync(cancellationToken) > 0
@@ -106,6 +114,8 @@ public static class PostApi
     {
         if (!user.TryGetUserEmail(out var userEmail)) return TypedResults.BadRequest();
 
+        Log.Information(LoggingMessages.UpdateSingleMessage, nameof(Model.Post), postId, request, userEmail);
+
         var post = await context.Posts.FindAsync([postId], cancellationToken);
 
         if (post is null) return TypedResults.NotFound();
@@ -114,7 +124,7 @@ public static class PostApi
 
         post.Content = request.Content;
         post.HasBeenModified = true;
-
+        
         var result = await context.SaveChangesAsync(cancellationToken);
 
         return result > 0
@@ -125,6 +135,8 @@ public static class PostApi
     private static async Task<Results<Ok, NotFound>> Delete([FromRoute] Guid postId, AppDbContext context,
         CancellationToken cancellationToken)
     {
+        Log.Information(LoggingMessages.DeleteSingleMessage, nameof(Model.Post), postId);
+
         var result = await context.Posts.Where(post => post.Id == postId)
             .ExecuteUpdateAsync(x =>
                     x.SetProperty(p => p.IsDeleted, true)
