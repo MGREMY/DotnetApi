@@ -15,7 +15,8 @@ builder.Services.AddDbContextPool<AppDbContext>(options =>
 builder.AddAuthentication()
     .AddAuthorization()
     .AddValidation()
-    .AddOpenApi();
+    .AddOpenApi()
+    .AddLogging();
 
 var app = builder.Build();
 
