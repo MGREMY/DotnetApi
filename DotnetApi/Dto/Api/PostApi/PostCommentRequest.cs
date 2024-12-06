@@ -7,7 +7,7 @@ namespace DotnetApi.Endpoint.Api;
 public static partial class PostApi
 {
     [DisplayName("Post_PostCommentRequest")]
-    private sealed record PostCommentRequest
+    public sealed record PostCommentRequest
     {
 #nullable disable
         public string Content { get; set; }

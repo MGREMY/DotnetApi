@@ -9,7 +9,7 @@ namespace DotnetApi.Endpoint.Api;
 public static partial class PostApi
 {
     [DisplayName("Post_PutRequest")]
-    private sealed record PutRequest
+    public sealed record PutRequest
     {
 #nullable disable
         public string Title { get; set; }

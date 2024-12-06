@@ -1,6 +1,7 @@
 ﻿using DotnetApi.Endpoint.Api;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
+using Serilog;
 using SharpGrip.FluentValidation.AutoValidation.Endpoints.Interceptors;
 using SharpGrip.FluentValidation.AutoValidation.Shared.Extensions;
 
@@ -64,6 +65,11 @@ internal class FluentValidationAutoValidationEndpointFilter : IEndpointFilter
 
                 if (!validationResult.IsValid)
                 {
+                    Log.Warning("Validation error on {uri} with request {@request}",
+                        context.HttpContext.Request.Path.ToString(),
+                        argument
+                    );
+
                     return TypedResults.ValidationProblem(
                         validationResult.Errors.GroupBy(item => item.PropertyName)
                             .ToDictionary(item => item.Key,
