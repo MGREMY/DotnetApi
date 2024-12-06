@@ -172,16 +172,16 @@ public class LoggingMessageBuilder
 
     public void BuildAndLogValue(Action<string, object[]> action)
     {
-        var parameters = new object[6];
+        var parameters = new List<object>(6);
 
-        if (_loggingMessage.WithModelName) parameters[0] = _loggingMessage.ModelName!;
-        if (_loggingMessage.WithCount) parameters[1] = _loggingMessage.Count!;
-        if (_loggingMessage.WithId) parameters[2] = _loggingMessage.Id!;
-        if (_loggingMessage.WithUserEmail) parameters[3] = _loggingMessage.UserEmail!;
-        if (_loggingMessage.WithRequest) parameters[4] = _loggingMessage.Request!;
-        if (_loggingMessage.WithValue) parameters[5] = _loggingMessage.Value!;
+        if (_loggingMessage.WithModelName) parameters.Add(_loggingMessage.ModelName!);
+        if (_loggingMessage.WithCount) parameters.Add(_loggingMessage.Count!);
+        if (_loggingMessage.WithId) parameters.Add(_loggingMessage.Id!);
+        if (_loggingMessage.WithUserEmail) parameters.Add(_loggingMessage.UserEmail!);
+        if (_loggingMessage.WithRequest) parameters.Add(_loggingMessage.Request!);
+        if (_loggingMessage.WithValue) parameters.Add(_loggingMessage.Value!);
 
-        action(_loggingMessage.ToString(), parameters);
+        action(_loggingMessage.ToString(), parameters.ToArray());
     }
 
     public void BuildAndLog<T0>(Action<string, T0> action, T0 p0)

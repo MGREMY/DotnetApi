@@ -68,7 +68,7 @@ public static class PostApi
             .WithType(LoggingMessage.OperationType.Get)
             .WithModelName<Model.Post>()
             .WithCount(posts.Data.Count())
-            .BuildAndLogValue(Log.Debug);
+            .BuildAndLogValue(Log.Information);
 
         return TypedResults.Ok(posts);
     }
@@ -91,7 +91,7 @@ public static class PostApi
             .WithModelName<Model.Post>()
             .WithId(postId)
             .WithValue(post)
-            .BuildAndLogValue(Log.Debug);
+            .BuildAndLogValue(Log.Information);
 
         return post is null
             ? TypedResults.NotFound()
@@ -109,7 +109,7 @@ public static class PostApi
             .WithModelName<Model.Post>()
             .WithUserEmail(userEmail)
             .WithRequest(request)
-            .BuildAndLogValue(Log.Debug);
+            .BuildAndLogValue(Log.Information);
 
         var post = ((Post)request).SetCreatedAtData();
 
@@ -134,7 +134,7 @@ public static class PostApi
             .WithId(postId)
             .WithUserEmail(userEmail)
             .WithRequest(request)
-            .BuildAndLogValue(Log.Debug);
+            .BuildAndLogValue(Log.Information);
 
         var post = await context.Posts.FindAsync([postId], cancellationToken);
 
@@ -159,7 +159,7 @@ public static class PostApi
             .WithType(LoggingMessage.OperationType.Delete)
             .WithModelName<Model.Post>()
             .WithId(postId)
-            .BuildAndLogValue(Log.Debug);
+            .BuildAndLogValue(Log.Information);
 
         var result = await context.Posts.Where(post => post.Id == postId)
             .ExecuteUpdateAsync(x =>
@@ -180,7 +180,7 @@ public static class PostApi
         new LoggingMessageBuilder()
             .WithType(LoggingMessage.OperationType.Get)
             .WithModelName<Model.Comment>()
-            .BuildAndLogValue(Log.Debug);
+            .BuildAndLogValue(Log.Information);
 
         var comments = await context.Comments.Select<Comment, CommentDto>(comment => new CommentDto
         {
@@ -207,11 +207,12 @@ public static class PostApi
             .WithType(LoggingMessage.OperationType.Create)
             .WithModelName<Model.Comment>()
             .WithRequest(request)
-            .BuildAndLogValue(Log.Debug);
+            .BuildAndLogValue(Log.Information);
 
         var comment = ((Comment)request).SetCreatedAtData();
 
         comment.CreatedUserEmail = email;
+        comment.PostId = postId;
 
         await context.Comments.AddAsync(comment, cancellationToken);
 

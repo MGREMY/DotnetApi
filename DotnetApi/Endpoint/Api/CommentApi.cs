@@ -65,7 +65,7 @@ public static class CommentApi
             .WithType(LoggingMessage.OperationType.Get)
             .WithModelName<Model.Comment>()
             .WithCount(comments.Data.Count())
-            .BuildAndLogValue(Log.Debug);
+            .BuildAndLogValue(Log.Information);
 
         return TypedResults.Ok(comments);
     }
@@ -88,7 +88,7 @@ public static class CommentApi
             .WithModelName<Model.Comment>()
             .WithId(commentId)
             .WithValue(comment)
-            .BuildAndLogValue(Log.Debug);
+            .BuildAndLogValue(Log.Information);
 
         return comment is null
             ? TypedResults.NotFound()
@@ -107,7 +107,7 @@ public static class CommentApi
             .WithId(commentId)
             .WithUserEmail(userEmail)
             .WithRequest(request)
-            .BuildAndLogValue(Log.Debug);
+            .BuildAndLogValue(Log.Information);
 
         var comment = await context.Comments.FindAsync([commentId], cancellationToken);
 
@@ -130,7 +130,7 @@ public static class CommentApi
             .WithType(LoggingMessage.OperationType.Delete)
             .WithModelName<Model.Post>()
             .WithId(commentId)
-            .BuildAndLogValue(Log.Debug);
+            .BuildAndLogValue(Log.Information);
 
         var result = await context.Comments.Where(comment => comment.Id == commentId)
             .ExecuteUpdateAsync(x =>
