@@ -1,7 +1,9 @@
-﻿using DotnetApi.Model;
+﻿using System.ComponentModel;
+using DotnetApi.Model;
 
 namespace DotnetApi.Dto;
 
+[DisplayName("Post_Dto")]
 public record PostDto
 {
 #nullable disable

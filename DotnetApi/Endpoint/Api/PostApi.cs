@@ -2,7 +2,6 @@
 using DotnetApi.Builder;
 using DotnetApi.Dto;
 using DotnetApi.Dto.Pagination;
-using DotnetApi.Dto.PostApi;
 using DotnetApi.Extension;
 using DotnetApi.Model;
 using DotnetApi.Model.Interface;
@@ -14,7 +13,7 @@ using Serilog;
 
 namespace DotnetApi.Endpoint.Api;
 
-public static class PostApi
+public static partial class PostApi
 {
     private const string Prefix = "/post";
 
@@ -99,7 +98,7 @@ public static class PostApi
     }
 
     private static async Task<Results<Created<PostDto>, BadRequest>> Post(
-        [FromBody] PostPostRequest request, ClaimsPrincipal user, AppDbContext context,
+        [FromBody] PostRequest request, ClaimsPrincipal user, AppDbContext context,
         CancellationToken cancellationToken)
     {
         if (!user.TryGetUserEmail(out var userEmail)) return TypedResults.BadRequest();
@@ -123,7 +122,7 @@ public static class PostApi
     }
 
     private static async Task<Results<Ok<PostDto>, BadRequest, NotFound, UnauthorizedHttpResult>> Put(
-        [FromBody] PostPutRequest request, [FromRoute] Guid postId, ClaimsPrincipal user, AppDbContext context,
+        [FromBody] PutRequest request, [FromRoute] Guid postId, ClaimsPrincipal user, AppDbContext context,
         CancellationToken cancellationToken)
     {
         if (!user.TryGetUserEmail(out var userEmail)) return TypedResults.BadRequest();
@@ -196,7 +195,7 @@ public static class PostApi
     }
 
     private static async Task<Results<Created<CommentDto>, BadRequest, NotFound>> PostComment(
-        [FromRoute] Guid postId, [FromBody] PostPostCommentRequest request, ClaimsPrincipal user, AppDbContext context,
+        [FromRoute] Guid postId, [FromBody] PostCommentRequest request, ClaimsPrincipal user, AppDbContext context,
         CancellationToken cancellationToken)
     {
         if (!user.TryGetUserEmail(out var email)) return TypedResults.BadRequest();

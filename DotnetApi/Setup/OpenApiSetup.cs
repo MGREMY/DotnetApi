@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using System.ComponentModel;
+using System.Reflection;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi.Models;
 
@@ -8,9 +10,29 @@ public static class OpenApiSetup
 {
     public static WebApplicationBuilder AddOpenApi(this WebApplicationBuilder builder)
     {
-        builder.Services.AddOpenApi(options => { options.AddDocumentTransformer<BearerSecurityTransformer>(); });
+        builder.Services.AddOpenApi(options =>
+        {
+            options.AddDocumentTransformer<BearerSecurityTransformer>();
+            options.AddSchemaTransformer<DisplayNameAttributeTransformer>();
+        });
 
         return builder;
+    }
+}
+
+internal class DisplayNameAttributeTransformer : IOpenApiSchemaTransformer
+{
+    public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context,
+        CancellationToken cancellationToken)
+    {
+        var displayNameAttribute = context.JsonTypeInfo.Type.GetCustomAttribute<DisplayNameAttribute>();
+        if (displayNameAttribute is not null)
+        {
+            var displayName = displayNameAttribute.DisplayName;
+            schema.Annotations["x-schema-id"] = displayName;
+        }
+
+        return Task.CompletedTask;
     }
 }
 

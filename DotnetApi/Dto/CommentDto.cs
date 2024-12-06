@@ -1,7 +1,9 @@
-﻿using DotnetApi.Model;
+﻿using System.ComponentModel;
+using DotnetApi.Model;
 
 namespace DotnetApi.Dto;
 
+[DisplayName("Comment_Dto")]
 public record CommentDto
 {
 #nullable disable

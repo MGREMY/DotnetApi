@@ -1,7 +1,6 @@
 ﻿using System.Security.Claims;
 using DotnetApi.Builder;
 using DotnetApi.Dto;
-using DotnetApi.Dto.CommentApi;
 using DotnetApi.Dto.Pagination;
 using DotnetApi.Extension;
 using DotnetApi.Model;
@@ -13,7 +12,7 @@ using Serilog;
 
 namespace DotnetApi.Endpoint.Api;
 
-public static class CommentApi
+public static partial class CommentApi
 {
     private const string Prefix = "/comment";
 
@@ -96,7 +95,7 @@ public static class CommentApi
     }
 
     private static async Task<Results<Ok<CommentDto>, NotFound, BadRequest, UnauthorizedHttpResult>> Put(
-        [FromBody] CommentPutRequest request, [FromRoute] Guid commentId,
+        [FromBody] PutRequest request, [FromRoute] Guid commentId,
         ClaimsPrincipal user, AppDbContext context, CancellationToken cancellationToken)
     {
         if (!user.TryGetUserEmail(out var userEmail)) return TypedResults.BadRequest();
