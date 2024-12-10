@@ -139,7 +139,7 @@ public static partial class PostApi
 
         if (post is null) return TypedResults.NotFound();
 
-        if (post.CreatedUserEmail != userEmail) return TypedResults.Unauthorized();
+        if (post.CreatedUserEmail != userEmail && !user.IsAdmin()) return TypedResults.Unauthorized();
 
         post.Content = request.Content;
         post.HasBeenModified = true;
@@ -151,9 +151,16 @@ public static partial class PostApi
             : TypedResults.BadRequest();
     }
 
-    private static async Task<Results<Ok, NotFound>> Delete([FromRoute] Guid postId, AppDbContext context,
+    private static async Task<Results<Ok, NotFound, BadRequest, UnauthorizedHttpResult>> Delete([FromRoute] Guid postId,
+        ClaimsPrincipal user, AppDbContext context,
         CancellationToken cancellationToken)
     {
+        if (!user.TryGetUserEmail(out var userEmail)) return TypedResults.BadRequest();
+
+        if (!user.IsAdmin())
+            if (!context.Posts.Any(post => post.Id == postId && post.CreatedUserEmail == userEmail))
+                return TypedResults.Unauthorized();
+
         new LoggingMessageBuilder()
             .WithType(LoggingMessage.OperationType.Delete)
             .WithModelName<Model.Post>()

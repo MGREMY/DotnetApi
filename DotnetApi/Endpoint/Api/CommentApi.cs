@@ -112,7 +112,7 @@ public static partial class CommentApi
 
         if (comment is null) return TypedResults.NotFound();
 
-        if (comment.CreatedUserEmail != userEmail) return TypedResults.Unauthorized();
+        if (comment.CreatedUserEmail != userEmail && !user.IsAdmin()) return TypedResults.Unauthorized();
 
         comment.Content = request.Content;
         comment.HasBeenModified = true;
@@ -122,9 +122,17 @@ public static partial class CommentApi
         return TypedResults.Ok((CommentDto)comment);
     }
 
-    private static async Task<Results<Ok, NotFound>> Delete([FromRoute] Guid commentId,
-        AppDbContext context, CancellationToken cancellationToken)
+    private static async Task<Results<Ok, NotFound, BadRequest, UnauthorizedHttpResult>> Delete(
+        [FromRoute] Guid commentId,
+        AppDbContext context,
+        ClaimsPrincipal user, CancellationToken cancellationToken)
     {
+        if (!user.TryGetUserEmail(out var userEmail)) return TypedResults.BadRequest();
+
+        if (!user.IsAdmin())
+            if (!context.Comments.Any(comment => comment.Id == commentId && comment.CreatedUserEmail == userEmail))
+                return TypedResults.Unauthorized();
+
         new LoggingMessageBuilder()
             .WithType(LoggingMessage.OperationType.Delete)
             .WithModelName<Model.Post>()
