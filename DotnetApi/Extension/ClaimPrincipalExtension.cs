@@ -31,6 +31,18 @@ public static class ClaimPrincipalExtension
 
     public static bool IsAdmin(this ClaimsPrincipal user)
     {
-        return user.TryGetUserRoles(out var roles) && roles.Any(x => x == "admin");
+        const string roleName = "admin";
+
+        return user.TryGetUserRoles(out var roles) && roles.Any(x => x == roleName);
+    }
+
+    public static bool IsAdminOrVerify(this ClaimsPrincipal user, Func<bool> verifyAction)
+    {
+        return user.IsAdmin() || verifyAction.Invoke();
+    }
+
+    public static bool IsAdminOrVerify(this ClaimsPrincipal user, bool verify)
+    {
+        return user.IsAdmin() || verify;
     }
 }

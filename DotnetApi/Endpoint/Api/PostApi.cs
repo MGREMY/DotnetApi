@@ -139,8 +139,9 @@ public static partial class PostApi
 
         if (post is null) return TypedResults.NotFound();
 
-        if (post.CreatedUserEmail != userEmail && !user.IsAdmin()) return TypedResults.Unauthorized();
+        if (!user.IsAdminOrVerify(post.CreatedUserEmail == userEmail)) return TypedResults.Unauthorized();
 
+        post.Title = request.Title;
         post.Content = request.Content;
         post.HasBeenModified = true;
 
@@ -157,9 +158,10 @@ public static partial class PostApi
     {
         if (!user.TryGetUserEmail(out var userEmail)) return TypedResults.BadRequest();
 
-        if (!user.IsAdmin())
-            if (!context.Posts.Any(post => post.Id == postId && post.CreatedUserEmail == userEmail))
-                return TypedResults.Unauthorized();
+        if (!user.IsAdminOrVerify(() =>
+                context.Posts.Any(post => post.Id == postId && post.CreatedUserEmail == userEmail)
+            ))
+            return TypedResults.Unauthorized();
 
         new LoggingMessageBuilder()
             .WithType(LoggingMessage.OperationType.Delete)

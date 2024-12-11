@@ -112,7 +112,7 @@ public static partial class CommentApi
 
         if (comment is null) return TypedResults.NotFound();
 
-        if (comment.CreatedUserEmail != userEmail && !user.IsAdmin()) return TypedResults.Unauthorized();
+        if (!user.IsAdminOrVerify(comment.CreatedUserEmail == userEmail)) TypedResults.Unauthorized();
 
         comment.Content = request.Content;
         comment.HasBeenModified = true;
@@ -129,9 +129,10 @@ public static partial class CommentApi
     {
         if (!user.TryGetUserEmail(out var userEmail)) return TypedResults.BadRequest();
 
-        if (!user.IsAdmin())
-            if (!context.Comments.Any(comment => comment.Id == commentId && comment.CreatedUserEmail == userEmail))
-                return TypedResults.Unauthorized();
+        if (!user.IsAdminOrVerify(() =>
+                context.Comments.Any(comment => comment.Id == commentId && comment.CreatedUserEmail == userEmail)
+            ))
+            return TypedResults.Unauthorized();
 
         new LoggingMessageBuilder()
             .WithType(LoggingMessage.OperationType.Delete)
