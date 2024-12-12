@@ -15,8 +15,8 @@ public static partial class StatisticsApi
         var group = builder.MapGroup(Prefix);
 
         group.MapGet("/{userEmail}", GetUserStatistics);
-        group.MapGet("/{userEmail}/totalPosts", GetTotalPosts);
-        group.MapGet("/{userEmail}/totalComments", GetTotalComments);
+        group.MapGet("/{userEmail}/posts/count", GetPostsCount);
+        group.MapGet("/{userEmail}/comments/count", GetCommentsCount);
 
         return builder;
     }
@@ -42,7 +42,7 @@ public static partial class StatisticsApi
         });
     }
 
-    private static async Task<Ok<int>> GetTotalPosts([FromRoute] string userEmail, AppDbContext context,
+    private static async Task<Ok<int>> GetPostsCount([FromRoute] string userEmail, AppDbContext context,
         CancellationToken cancellationToken)
     {
         var count = await context.Posts.CountAsync(post => post.CreatedUserEmail == userEmail,
@@ -51,7 +51,7 @@ public static partial class StatisticsApi
         return TypedResults.Ok(count);
     }
 
-    private static async Task<Ok<int>> GetTotalComments([FromRoute] string userEmail, AppDbContext context,
+    private static async Task<Ok<int>> GetCommentsCount([FromRoute] string userEmail, AppDbContext context,
         CancellationToken cancellationToken)
     {
         var count = await context.Comments.CountAsync(comment => comment.CreatedUserEmail == userEmail,

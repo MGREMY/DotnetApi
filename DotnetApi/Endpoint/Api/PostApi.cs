@@ -28,6 +28,7 @@ public static partial class PostApi
         group.MapDelete("/{postId:guid}", Delete).RequireAuthorization("post:d");
         group.MapGet("/{postId:guid}/comments", GetComments).RequireAuthorization("post:r", "comment:r");
         group.MapPost("/{postId:guid}/comments", PostComment).RequireAuthorization("post:rw", "comment:rw");
+        group.MapGet("/{postId:guid}/comments/count", GetCommentsCount);
 
         return builder;
     }
@@ -227,5 +228,21 @@ public static partial class PostApi
         return await context.SaveChangesAsync(cancellationToken) > 0
             ? TypedResults.Created($"/{comment.Id}", (CommentDto)comment)
             : TypedResults.BadRequest();
+    }
+
+    private static async Task<Results<Ok<int>, NotFound>> GetCommentsCount([FromRoute] Guid postId,
+        AppDbContext context, CancellationToken cancellationToken)
+    {
+        if (!await context.Posts.AnyAsync(post => post.Id == postId, cancellationToken)) return TypedResults.NotFound();
+
+        new LoggingMessageBuilder()
+            .WithType(LoggingMessage.OperationType.Get)
+            .WithModelName<Model.Post>()
+            .WithId(postId)
+            .BuildAndLogValue(Log.Information);
+
+        var count = await context.Comments.CountAsync(comment => comment.PostId == postId, cancellationToken);
+
+        return TypedResults.Ok(count);
     }
 }
