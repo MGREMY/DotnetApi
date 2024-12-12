@@ -14,6 +14,7 @@ public static class ApiMapper
         app.MapGroup("/api")
             .MapPostApiEndpoints()
             .MapCommentApiEndpoints()
+            .MapStatisticsApiEndpoint()
             .AddEndpointFilter<FluentValidationAutoValidationEndpointFilter>();
 
         return app;
@@ -26,7 +27,8 @@ public static class Policies
     {
         builder
             .MapPostApiPolicies()
-            .MapCommentApiPolicies();
+            .MapCommentApiPolicies()
+            .MapStatisticsApiPolicies();
 
         return builder;
     }
